@@ -1,0 +1,13 @@
+I got the data from MAPZEN and the link is below.
+
+https://mapzen.com/data/metro-extracts/#san-francisco-california
+
+I used San Francisco,California OSM XML(58.6MB)
+
+
+The position I wrangled in my project is below.
+
+http://www.openstreetmap.org/export#map=12/37.7186/-122.4018
+
+
+The reason I chose here is just I love the place.I traveled here two years ago and visited several companies in Bay area.

@@ -1,0 +1,8 @@
+Reference
+
+Discussion Forum
+https://discussions.udacity.com/t/preparing-for-database-node-type/159636
+https://discussions.udacity.com/t/last-quiz-preparing-for-database-in-lesson-6-mongodb/44559
+
+Web site
+http://dotinstall.com/lessons/basic_mongodb_v3
