@@ -1,9 +1,5 @@
 
 # coding: utf-8
-
-# In[ ]:
-
-
 import codecs
 import json
 import re
@@ -15,9 +11,16 @@ import pprint
 
 
 cafe_type_re = re.compile(r'\b\S+\.?$', re.IGNORECASE)
-
-
 expected = [ "Starbucks Coffee", "Peet's Coffee & Tea"]
+
+
+#pattern and pattern1 is used for cleaning the postal code.
+#pattern is used to split the state character and pattern1 is used to devide the zip code.
+pattern=r"[a-zA-Z:]+(: )?"
+regexp=re.compile(pattern)
+pattern1=re.compile(r"(\d{5})(-)?(\d{4})")
+
+
 
 # UPDATE THIS VARIABLE
 mapping = { "Starbucks": "Starbucks Coffee",
@@ -72,17 +75,6 @@ def update_name(name, mapping):
     return name
 
 
-
-#st_types = audit(OSMFILE)
-    
-#pprint.pprint(dict(st_types))
-
-#for st_type, ways in st_types.iteritems():
-  #   for name in ways:
-    #    better_name = update_name(name, mapping)
-      #  print name, "=>", better_name
-
-
 def shape_element(element):
     node = {}
     created={}
@@ -122,7 +114,22 @@ def shape_element(element):
                     elif secondlevel.attrib['k'].count(':')==1:
                         if secondlevel.attrib['k'].startswith("addr:"):
                             stripped=secondlevel.attrib['k'].replace("addr:","")
-                            address[stripped]=secondlevel.attrib['v']
+                            
+                            #Cleaning the postcode
+                            if stripped=="postcode":
+                            #Remove state character
+                                no_letter= regexp.sub("",secondlevel.attrib['v'])
+                                postcode=no_letter.strip()
+                            #Keep appropriate zip codes
+                                if len(postcode)<5:
+                                    pass
+                                else:
+                                    if len(pattern1.sub(r"\1",postcode))==5:
+                                        address[stripped]=pattern1.sub(r"\1",postcode)
+                                    else:
+                                        pass      
+                            else:
+                                address[stripped]=secondlevel.attrib['v']
                         else:
                             node[secondlevel.attrib['k']]=secondlevel.attrib['v']
                 if "amenity"==secondlevel.attrib["k"]:
@@ -133,19 +140,14 @@ def shape_element(element):
                     node[secondlevel.attrib["k"]]=update_name(secondlevel.attrib['v'],mapping)
                 if "phone"==secondlevel.attrib["k"]:
                     node[secondlevel.attrib["k"]]=secondlevel.attrib['v']
-                
-                   
-                          
+            
+            
+            
             if "ref" in secondlevel.attrib:
                 ref.append(secondlevel.attrib["ref"])
                 node["node_refs"]=ref
                 
-                
-                
-        
-        
-        
-        
+
         if address:
             node['address'] = address
             #print node['address']
@@ -162,7 +164,7 @@ def shape_element(element):
     
 def process_map(file_in, pretty = False):
     # You do not need to change this file
-    file_out = "{0}.json".format(file_in)
+    file_out = "{0}_revised.json".format(file_in)
     data = []
     with codecs.open(file_out, "w","utf-8") as fo:
         for _, element in ET.iterparse(file_in):
@@ -179,4 +181,3 @@ def process_map(file_in, pretty = False):
 data = process_map('san-francisco_california.osm', False)
 
 pprint.pprint(data)
-
