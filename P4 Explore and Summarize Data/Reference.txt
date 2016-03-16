@@ -1,0 +1,5 @@
+Reference
+
+I referred the web page below.
+
+http://trevorstephens.com/post/72923766261/titanic-getting-started-with-r-part-3-decision
