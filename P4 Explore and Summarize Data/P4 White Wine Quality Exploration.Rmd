@@ -1,0 +1,429 @@
+White Wine Quality Exploration by Ryosuke Honda
+========================================================
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+
+
+library(ggplot2)
+library(dplyr)
+library(GGally)
+library(rattle)
+library(RGtk2)
+library(rpart)
+library(rpart.plot)
+library(RColorBrewer)
+```
+
+```{r echo=FALSE, Load_the_Data}
+# Load the Data
+wine<-read.csv("wineQualityWhites.csv")
+```
+
+# Univariate Plots Section
+```{r echo=FALSE, Univariate_Plots}
+
+```
+
+
+```{r echo=FALSE,message=FALSE}
+names(wine)
+ggplot(wine,aes(quality))+geom_bar()
+table(wine$quality)
+```
+
+Many of wines are in quality 5 and 6,1457 and 2198 respectively. There are only 5 wines that are quality 9.
+
+```{r echo=FALSE,message=FALSE}
+
+ggplot(wine,aes(fixed.acidity))+geom_histogram()
+ggplot(wine,aes(volatile.acidity))+geom_histogram()
+ggplot(wine,aes(citric.acid))+geom_histogram()
+```
+
+These three plots are about the acid in wine and the shape of them are similar.There is one peak in the middle in each graph. This seems to be natural for me be to make wine since too much acid make the taste too sour and too little may lose the taste of wine.
+
+
+```{r echo=FALSE,message=FALSE}
+ggplot(wine,aes(residual.sugar))+geom_histogram(binwidth=1)
+```
+
+The histogram above shows the amount of sugar. I can observe one peak in the histogram. Residual sugar is continuous value so I should transform the long tail data.
+
+```{r echo=FALSE,message=FALSE}
+ggplot(wine,aes(residual.sugar))+geom_histogram()+scale_x_log10()
+```
+
+Transforming the data, it appears to be bimodal distribution. I infer that there exists two types of wine:"sweet" and "not sweet" wine.
+
+```{r echo=FALSE,message=FALSE}
+ggplot(wine,aes(chlorides))+geom_histogram()
+summary(wine$chlorides)
+```
+
+```{r echo=FALSE,message=FALSE}
+sd<-sd(wine$chlorides)
+```
+
+The amount of salt in wine is almost the same in every wine. 1st Qu. is 0.036 $g/dm^3$ and 3rd Qu. is 0.05 $g/dm^3$. The standard deviation of it is `r sd`.
+
+```{r echo=FALSE,message=FALSE}
+ggplot(wine,aes(free.sulfur.dioxide))+geom_histogram()+coord_cartesian(xlim=c(0,150))
+summary(wine$free.sulfur.dioxide)
+sd(wine$free.sulfur.dioxide)
+```
+
+Most wines of free-sulfur-dioxide are between 23.00 to 46.00
+
+```{r echo=FALSE,message=FALSE}
+ggplot(wine,aes(total.sulfur.dioxide))+geom_histogram()
+summary(wine$total.sulfur.dioxide)
+sd(wine$total.sulfur.dioxide)
+```
+
+75% of tatal-sulfur-dioxide is below 167.0
+The distribution is varied campared with that of free-sulfur-dioxide. I think this is because of the characteristic of free-sulfur-dioxide. If there exists much sulfur-dioxide, it will bind with sugars or other chemicals. Therefore, the distribution of free-sulfur-dioxide is narrow compared with total-sulfur-dioxide.
+```{r echo=FALSE,message=FALSE}
+ggplot(wine,aes(density))+geom_histogram()
+```
+
+This distribution is understandable since the density of water is 1 and main componets of wine is also water. Therefore the density is around 1. Since the density of alcohol is below 1, most of the density is below 1,I think.
+
+```{r echo=FALSE,message=FALSE}
+ggplot(wine,aes(pH))+geom_histogram()
+summary(wine$pH)
+```
+
+This distribution is interesting to me. The distribution is wide and this may be an important factor of wine's taste(That leads to the quality of wine.). I'll take a closer look at this.
+
+```{r echo=FALSE,message=FALSE}
+ggplot(wine,aes(sulphates))+geom_histogram()
+summary(wine$sulphates)
+```
+
+Sulphates is a wine additive which can contribute to sulfur dioxide gas (SO2) levels, which acts as an antimicrobial and antioxidant.So I have to check the relationship between this and free-sulfur-dioxide or total sulfur-dioxide.
+
+
+From now on, I define three new variables that are necessary to look into the datasets.Those are "class","bound.sulfur.dioxide" and"ratio". I'll describe those variables in the Univariate Analysis section.
+```{r echo=FALSE}
+wine$class<-cut(wine$quality,breaks=c(0,4,7,9),labels=c("bad","normal","good"))
+wine$bound.sulfur.dioxide<-wine$total.sulfur.dioxide-wine$free.sulfur.dioxide
+wine$ratio<-wine$free.sulfur.dioxide/wine$total.sulfur.dioxide
+```
+
+# Univariate Analysis
+
+### What is the structure of your dataset?
+```{r echo=FALSE}
+str(wine)
+```
+
+This dataset contains 4898 of observations and 11 variables and one output(quality). Variables are X,fixed.acidity,volatile.acidity,citric.acid,residual.sugar,chlorides,free.sulfur.dioxide,total.sulfur.dioxide,density,pH,sulpahates,alcohol and quality. All of the data in this data set is number.Most of the wines are quality 5 or 6 and high quality(9) or low quality(3) of wines are rare.
+
+
+### What is/are the main feature(s) of interest in your dataset?
+
+The main feature of interest is quality of wine.
+I'm interested to know what factors are important to be evaluated high quality wine.
+
+### What other features in the dataset do you think will help support your investigation into your feature(s) of interest?
+
+Alcohol,total-sulfur-dioxide,free-sulfur-dioxide and volatile acidity will affect the quality of wine. I think alcohol contribute most to the quality of wine after researching infromation on wine.
+
+### Did you create any new variables from existing variables in the dataset?
+
+Since the number of quality 9 of wine and quality 3 of wine are small,it would be better to classify into group. I classified them as below.
+
+* Quality 3,4 is "bad"",
+* Quality 5,6,7 is "normal"
+* Quality 8,9 is "good" wine.
+
+
+I created "bound sulfur dioxide"which is defined as below.
+$$ Bound\  SO_2 = Total\  SO_2 -Free\  SO_2 $$
+I also created the ratio between free-sulfur-dioxide and total-dulfur-dioxide.
+
+### Of the features you investigated, were there any unusual distributions? Did you perform any operations on the data to tidy, adjust, or change the form of the data? If so, why did you do this?
+
+There are no missing data in this dataset. I found many outliers but those data aren't erroneous ones(I think),therefore I didn't adjust or change the form of data.
+
+# Bivariate Plots Section
+```{r echo=FALSE,message=FALSE, Bivariate_Plots}
+#plots of all combinations.
+ggpairs(wine,columns=1:ncol(wine),
+  lower = list(continuous = wrap("points", shape = I('.'))),
+  upper = list(combo = wrap("box", outlier.shape = I('.'))))
+```
+
+```{r echo=FALSE}
+ggplot(wine,aes(class))+geom_bar()
+```
+
+Which chemical properties influence the quality of white wines?
+To begin with,I assume that good wine is the wine that has quality 8 or 9 and bad wine is the wine that has the quality of 3,4,5 as mentioned above.
+
+
+I tried all polts and the graph below is the most significant.
+```{r echo=FALSE}
+ggplot(wine,aes(class,alcohol))+geom_boxplot()
+ggplot(wine,aes(alcohol,fill=class))+geom_density(alpha=0.5)
+```
+The median of alcohol concentration in "good" wine is conspicuously high.It may say that good wines have high alcohol concentration in common,but this isn't apparently enough. Our sense of taste is sentitive. high alcohol is necessary but not must.So what's other chemical properties that influence the quality of wine? 
+
+The quantile of alcohol in good wine
+```{r echo=FALSE}
+#The quantile table. Selecting column only wine class equals to good.
+quantile(wine[wine$class=="good",]$alcohol,)
+```
+The quantile means that top 75% of good wines have more than 11.0% of alcohol concentration.
+So I handle only alcohol concentration that are equal or more than 11.0%
+
+```{r echo=FALSE}
+#Selecting only alcohol concentration is more or equal to 11.0
+ggplot(data=subset(wine,alcohol>=11.0),aes(class,free.sulfur.dioxide))+geom_boxplot()
+
+```
+This graph shows that "bad" wines tend to have low amount of free sulfur dioxide.This was surprising for me since sulfur dioxide is added to prevent oxidation, so large amount of sulfur dioxide is bad for our health and small amount is good for us. However, judging from this graph, I guess bad wine is vulnerable to oxygen and that may affect the taste of wine.
+
+
+
+```{r echo=FALSE}
+ggplot(data=subset(wine,alcohol>=11.0),aes(class,bound.sulfur.dioxide))+geom_boxplot()
+```
+To the contrary,the amount of bound sulfur dioxide in "good" wine is lower compared with "bad" wine. I'll expaine about bound sulfur dioxide.Bound sulfur dioxide is,as the name suggests, the sulfur dioxide that combine other chemicals such as sugar or acids. Bound sulfur dioxide have no(or weaker) anti oxidation so high amount of bound dioxide is can be no meaning or can affect the taste of wine. High ratio of free/total sulfur dioxide is meaningful and I infer that good wine will have high ratio.
+
+```{r echo=FALSE}
+ggplot(data=subset(wine,alcohol>=11.0),aes(ratio,fill=class))+geom_density(alpha=0.5)
+```
+This graph means that "good" wine is likely to have high ratio of free/total sulfur dioxide.This is also one of the factor to be "good" wine.
+
+
+I'm curious whether high amount of free sulfur dioxide affects the pH,since free sulfur dioxide is in the state below.
+$$H_2O+ SO_{2} \Leftrightarrow SO_{3}^-+H^+ $$
+This will affect the pH.So I plotted the graph.
+
+```{r echo=FALSE}
+ggplot(data=subset(wine,alcohol>=11.0),aes(free.sulfur.dioxide,pH))+geom_point()
+with(data=subset(wine,alcohol>=11.0),cor.test(free.sulfur.dioxide,pH))
+```
+
+From this graph, I can't conclude that free sulfur dioxide affects the pH.To testify,I tried to caluculate the correlation. The result is -0.06.This means there is no relation between two variants.(The order of free-sulfur-dioxide is mg/dm^3. On the other hand, ther order of fixed acidity that is acid is g/cm^3. Therefore, other acids have strong effect on the pH.)
+
+
+Is there any other factors? I plotted the below.(I intentionally omit the condition of alcohol>=11.0 in the below graphs and analysis.)
+```{r echo=FALSE}
+ggplot(wine,aes(class,density))+geom_boxplot()
+```
+
+"Good" wine has lower density than other wines. I think this is related with the high alcohol concentration in "good" wine,since alcohol's density is lower than 1.That'll affect the density.
+
+```{r echo=FALSE}
+ggplot(wine,aes(alcohol,density))+geom_point()
+
+```
+
+Clearly there is a relationship between density and alcohol.The higher alcohol concentration leads to lower density.
+
+```{r echo=FALSE}
+cor.test(wine$alcohol,wine$density)
+```
+
+The correlation also shows that there's strong relationship.
+
+
+
+# Bivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the investigation. How did the feature(s) of interest vary with other features in the dataset?
+
+In this part, I observed the relationship between class and alcohol.The "good" wines have high concentration of alcohol compared with others.So this is one of the factors to be good wine.However, not all of the wines that have high concentration of alcohol are good.Therefore, I also checked the other factors in the condition of high alcohol. The results are that good wine also tend to have high free-sulfur-dioxide and high ratio of free/total sulfur-dioxide.
+
+### Did you observe any interesting relationships between the other features (not the main feature(s) of interest)?
+
+I've also researched about the ralationship between alcohol concentration and the density.Since good wines have high alcohol, I thought the density of high alcohol wines is low and the result was true. Alcohol and density are highly related with each other.
+
+### What was the strongest relationship you found?
+
+The relationshp between class and alcohol is the strongest of all.High alcohol concentration is the most important factor of all.The analysis above are done in the following condition: alcohol concentration is more than 11.0 %
+
+
+# Multivariate Plots Section
+In the analysis above, I could differentiate between "good" and "bad" wines. However,judging from the graphs above I couldn't diffrentiate between "good" and "normal" wines. So in this chapter, I try to research what is the main difference between "good" and "normal" wines. The analysis above were done by the condition that the alcohol concentration is more or equalls to 11.0 % and there seems to me that there is no difference between "good" and "normal" wines. 
+
+
+I could see the small difference in pH,ratio(defined above),sulphates and residual.sugar.So I'll plot these factors into graphs with facet grid.
+```{r echo=FALSE, Multivariate_Plots}
+ggplot(wine,aes(pH,ratio,col=factor(quality)))+
+  geom_point(alpha=0.5)+
+  facet_grid(.~quality)
+
+ggplot(wine,aes(pH,sulphates,col=factor(quality)))+
+  geom_point(alpha=0.5)+
+  facet_grid(.~quality)
+
+ggplot(wine,aes(pH,residual.sugar,col=factor(quality)))+
+  geom_point(alpha=0.5)+
+  facet_grid(.~quality)+
+  coord_cartesian(ylim=c(0,20))
+```
+
+
+```{r echo=FALSE}
+ggplot(wine,aes(ratio,sulphates,col=factor(quality)))+
+  geom_point(alpha=0.5)+
+  facet_grid(.~quality)
+
+#omit the outliers of residual.sugar
+ggplot(wine,aes(ratio,residual.sugar,col=factor(quality)))+
+  geom_point(alpha=0.5)+
+  facet_grid(.~quality)+
+  coord_cartesian(ylim=c(0,20))
+```
+
+```{r echo=FALSE}
+ggplot(wine,aes(sulphates,residual.sugar,col=factor(quality)))+
+  geom_point(alpha=0.5)+
+  facet_grid(.~quality)+
+  coord_cartesian(ylim=c(0,20))
+```
+
+The first graph shows a little diffrence in ratio. good wine(quality 8 or 9) has slightly high ratio of free-sullfur-dioxide.
+From these plots, I couldn't find meaningful difference between "normal" and "good" wines.Therefore, I can conclude that the difference between "normal" and "good" wines are only alcohol concentration.
+
+# Multivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the investigation. Were there features that strengthened each other in terms of looking at your feature(s) of interest?
+In the previous analysis section, I could show the difference between "bad" and "good" wines.However, I failed to tell apart the diffrence between "normal" and "good" wines in the conditon of high alcohol concentration. Therefore, in this section I tried to show the diffrence between "normal" and "good" wines without using alcohol concentration. Though plotting the all values that seems meaningful, I couldn't see any difference between "normal" and "good" wines.This means the difference exists only alcohol.
+
+### Were there any interesting or surprising interactions between features?
+In the multivariate Plots section, I showed there is no difference between "normal" and "good" wines if I don't use the alcohol condition. 
+
+
+### OPTIONAL: Did you create any models with your dataset? Discuss the strengths and limitations of your model.
+I tried to make decision tree model.One is without cross validation,another is using cross validationl. I also tried to make linear model of this dataset.
+
+#### Decision Tree Model(Without cross validation)
+```{r}
+# set the random seed
+set.seed(1)
+
+n<-nrow(wine)
+# shuffling the data set
+shuffled<-wine[sample(n),]
+# devide into train and test set.(60:40)
+train<-shuffled[1:round(0.6*n),]
+test<-shuffled[(round(0.6*n)+1):n,]
+# make the decision tree model
+tree<-rpart(quality ~.,train,method="class")
+# make prediction
+pred<-predict(tree,test,type="class")
+
+#Evaluate the model
+conf<-table(test$quality,pred)
+sum(diag(conf))/sum(conf)
+
+# Decision Tree
+fancyRpartPlot(tree)
+```
+
+The decision tree model without using cross validation, The result is 58.8%
+
+#### Decision Tree Model(With cross validation)
+```{r}
+# Initialize the accs vector
+accs<-rep(0,6)
+for (i in 1:6) {
+  # These indices indicate the interval of the test set
+  indices <- (((i-1) * round((1/6)*nrow(shuffled))) + 1):((i*round((1/6) * nrow(shuffled))))
+  
+  # Exclude them from the train set
+  train_cross <- shuffled[-indices,]
+  
+  # Include them in the test set
+  test_cross <- shuffled[indices,]
+  
+  # A model is learned using each training set
+  tree_cross <- rpart(quality ~ ., train_cross, method = "class")
+  
+  # Make a prediction on the test set using tree
+  pred_cross<-predict(tree_cross,test_cross,type="class")
+  
+  # Assign the confusion matrix to conf
+  conf_cross<-table(test_cross$quality,pred_cross)
+  
+  # Assign the accuracy of this model to the ith index in accs
+accs[i]<-sum(diag(conf_cross))/sum(conf_cross)
+}
+
+# Print out the mean of accs
+mean(accs)
+
+#Decision Tree
+fancyRpartPlot(tree_cross)
+```
+
+The decision tree model with cross validation, the result is 59.5%
+The result improves when applying cross validation(and reliable).
+
+
+
+
+```{r}
+lm<-lm(quality~.,wine)
+summary(lm)
+```
+The result of linear model is 56.1%
+Of all of these models Decision tree with cross validation is the highest performance.
+
+
+```
+
+------
+
+# Final Plots and Summary
+
+### Plot One
+```{r echo=FALSE, Plot_One}
+ggplot(wine,aes(alcohol,fill=class))+
+  geom_density(alpha=0.5)+
+  labs(x="Alcohol Concentration",fill="  Class of\nWhite Wine")+
+  ggtitle("Density of Alcohol Concentration by White Wine class")
+
+```
+
+### Description One
+This graph clearly shows the diffrence of alcohol concentration distribution."Good" wines  
+tend to have higher alcohol concentration than "normal" and "bad" wines.
+
+### Plot Two
+```{r echo=FALSE, Plot_Two}
+ggplot(data=subset(wine,alcohol>=11.0),aes(class,free.sulfur.dioxide))+
+  geom_boxplot()+
+  labs(x="Class of White Wine",y="Free Sulfur Dioxide (mg/dm^3)")+
+  ggtitle("Amount of Free Sulfur Dioxide by White Wine class(Alcohol>=11.0%)")
+  
+```
+
+### Description Two
+
+This graph explains the difference between "good" and "bad" wines in high alcohol concentration."Bad" wines are likely to hold small amount of Free Sulfur-dioxide.That means that wines are vulnerable to the oxygen.
+
+### Plot Three
+```{r echo=FALSE, Plot_Three}
+ggplot(wine,aes(pH,ratio,col=factor(quality)))+
+  geom_point(alpha=0.5)+
+  facet_grid(.~quality)+
+  labs(x="pH",y="Free SO2 / Total SO2",col="  Quality of\nWhite Wine")+
+  ggtitle("   Relation between pH and Free SO2 / Total SO2 by Quality ")
+```
+
+### Description Three
+
+This graph shows that high quality wines(8,9) tend to have slightly higher ratio of free sulfur dioxide than other wines(3~7).pH distribution doesn't change so much by the quality of wine. 
+
+------
+
+# Reflection
+
+The White wine dataset contains almost 4900 observation and has 11 variables and one output(quality).First, I tried to understand each of the variable. I plotted the distribution on the way.Then I found that the significant diffrence between good and bad wines is in the alcohol.So I confined the data in high alcohol to ascertain the other significant factors. I found that good wines have high amount of free sulfur dioxide and small amount of total amount of sulfur dioxide. Bad wines, on the other hand, have small amount of free sulfur dioxide and have high amount of total sulfur dioxide.I could differentiate bad and good wines.However, I had hard time to tell apart normal and good wines. There is clear difference in alcohol concentration, but apart from that, I couldn't find any difference between normal and good wines.Wine contains many ingredients and all of them are quite important when we taste.Our sense of taste are quite sensitive to them so we may feel the tiny difference.That may be the reason why there's little difference between normal and good wines.
+
+If the data contains year of made,production area,number of people who tasted and price, it would be more interesting to ascertain the quality of wines.(However,since these factors contain privacy, those data won't be revealed.)
