@@ -1,7 +1,6 @@
 
 # coding: utf-8
 
-# In[2]:
 
 #!/usr/bin/python
 import sys
@@ -33,22 +32,7 @@ with open("final_project_dataset.pkl", "r") as data_file:
 
 ### Task 2: Remove outliers
 data_dict.pop("TOTAL",0)
-data_dict.pop("LAY KENNETH L",0)
 data_dict.pop("FREVERT MARK A",0)
-data_dict.pop("BHATHAGAR SANJAY",0)
-data_dict.pop("WHITE JR TOHMASE",0)
-data_dict.pop("PAL LOUL",0)
-data_dict.pop("LAVORATO JOHN",0)
-data_dict.pop("DIETRICH JANET R",0)
-data_dict.pop("KAMINSKI WINCENTY J",0)
-data_dict.pop("KEAN STEVEN J",0)
-data_dict.pop("SHAPIRO RICHARD S",0)
-data_dict.pop("WHALLEY LAWRENCE G",0)
-
-
-
-
-
 
 
 ### Task 3: Create new feature(s)
@@ -131,26 +115,28 @@ pca = RandomizedPCA(random_state=3)
 ### stratified shuffle split cross validation. For more info: 
 ### http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.StratifiedShuffleSplit.html
 
-
-
+  
 
 
 
 #Split features and labels into train and test data.
-features_train, features_test, labels_train, labels_test =     train_test_split(features, labels, test_size=0.3, random_state=42)
+features_train, features_test, labels_train, labels_test =     train_test_split(features, labels, test_size=0.2, random_state=42)
 
 combined_features = FeatureUnion([("kbest", kbest),("pca", pca),])
 transformed_features=combined_features.fit(features_train,labels_train).transform(features_train)
     
     
 #MinMax Scaling after SelectKBest and PCA
-scale=MinMaxScaler()    
+scale=MinMaxScaler()  
+
     
 #Pipeline 
 pipeline=Pipeline([("features_train",combined_features),("minmax",scale),("dtc",dtc)])
 parameters={"features_train__pca__n_components":range(1,14),
                     "features_train__kbest__k":range(1,14),
-                    "dtc__criterion":["gini","entropy"]}
+                    "dtc__criterion":["gini","entropy"],
+                    "dtc__min_samples_split":[2,10,30],
+                     "dtc__min_samples_leaf":[1,2,3]}
 
 
 #GridSearch (10 fold Cross Validation)
@@ -175,9 +161,4 @@ print " "
 test_classifier(clf, my_dataset, features_list)
 
 dump_classifier_and_data(clf, my_dataset, features_list)
-
-
-# In[ ]:
-
-
 
