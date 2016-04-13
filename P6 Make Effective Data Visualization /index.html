@@ -19,54 +19,50 @@ h1{
 </head>
 
 <body>
-  <h1>Baseball Players' Performance</h1>
-  <p>A data set containing 1,157 baseball players including their handedness (right or left handed), height (in inches), weight (in pounds), batting average, and home runs. <br><a href="https://docs.google.com/document/d/1w7KhqotVi5eoKE3I_AZHbsxdr-NmcWsLTIiZrpxWx4w/pub?embedded=true">Data Available here!</a></p>
+<h1>Baseball Players' Performance</h1>
+<p>A data set containing 1,157 baseball players including their handedness (right or left handed), height (in inches), weight (in pounds), batting average, and home runs. <br>   <a href="https://docs.google.com/document/d/1w7KhqotVi5eoKE3I_AZHbsxdr-NmcWsLTIiZrpxWx4w/pub?embedded=true">Data Available here!</a></p>
 
 
-  <div id="chartContainer1"></div>
-  <p>The graph above shows the top 60 baseball player's average from 1,157 baseball players.<br>
-  *Note Body Mass Index(BMI) above 24 is considered Overweight. It seems many of them belong to Overweight.<br><br>Is it a gereral trend to have high BMI for great baseball players? To check it out, I made two additional visualization by BMI.
-  </p>
+<div id="chartContainer1"></div>
+<p>The graph above shows the top 60 baseball player's average from 1,157 baseball players.<br>
+*Note Body Mass Index(BMI) above 24 is considered Overweight. It seems many of them belong to Overweight.<br><br>Is it a gereral trend to have high BMI for great baseball players? To check it out, I made two additional visualization by BMI.</p>
 
-  <div id="chartContainer2"></div>
-  <p>The two graphs above are the average of players' performance.<br>
-   From the graphs, Overweight players tend to be better performance.<br>Left handed players are better performance in batting average and homeruns than right handed players.
-  </p>
-
-  <script src="d3/d3.min.js"></script>
-  <script src="dimple.v2.2.0.js"></script>
-  
+<div id="chartContainer2"></div>
+<p>The two graphs above are the average of players' performance.<br>
+   From the graphs, Overweight players tend to be better performance.<br>Left handed players are better performance in batting average and homeruns than right handed players.</p>
+ <script src="http://d3js.org/d3.v3.min.js"></script>
+ <script src="http://dimplejs.org/dist/dimple.v2.1.6.min.js"></script>
   <script type="text/javascript">
-    var svg = dimple.newSvg("#chartContainer1", 1200, 300);
-      d3.csv("baseball_final.csv", function(data){
+  var svg = dimple.newSvg("#chartContainer1", 1200, 300);
+  d3.csv("baseball_final.csv", function(data){
   
   
 
 
-      var myChart=new dimple.chart(svg,data);
-          myChart.setBounds(275,30,385,230)
+    var myChart=new dimple.chart(svg,data);
+        myChart.setBounds(275,30,385,230)
         
-      var x=myChart.addMeasureAxis("x","BMI");
-          x.overrideMax=28;
-          x.overrideMin=21;
+    var x=myChart.addMeasureAxis("x","BMI");
+        x.overrideMax=28;
+        x.overrideMin=21;
+    var y=myChart.addMeasureAxis("y","Average");
+        y.overrideMin=0.27;
+        y.overrideMax=0.33;
+        myChart.addMeasureAxis("z","HR");
+        myChart.addSeries(["Name","Handedness"],dimple.plot.bubble);
+     var myLegend=myChart.addLegend(650, 150, 200, 200, "Right");
 
-      var y=myChart.addMeasureAxis("y","Average");
-          y.overrideMin=0.27;
-          y.overrideMax=0.33;
+      
 
-          myChart.addMeasureAxis("z","HR");
-          myChart.addSeries(["Name","Handedness"],dimple.plot.bubble);
-      var myLegend=myChart.addLegend(650, 150, 200, 200, "Right");
-
-          myChart.draw();
-
-       svg.append("text")
-          .attr("x", 470)
-          .attr("y", 17)
-          .style("text-anchor", "middle")
-          .style("font-family", "sans-serif")
-          .style("font-weight", "bold")
-          .text("Batting Performance of top 60 Players");
+       
+        myChart.draw();
+   svg.append("text")
+   .attr("x", 470)
+   .attr("y", 17)
+   .style("text-anchor", "middle")
+   .style("font-family", "sans-serif")
+   .style("font-weight", "bold")
+   .text("Batting Performance of top 60 Players");
         
  
         
@@ -75,21 +71,21 @@ h1{
         // object to split it onto 2 lines.  This technique works with any
         // number of lines, it isn't dimple specific.
         svg.selectAll("title_text")
-           .data(["Click legend to","show/hide handedness:"])
-           .enter()
-           .append("text")
-           .attr("x", 700)
-           .attr("y", function (d, i) { return 40 + i * 25; })
-           .style("font-family", "sans-serif")
-           .style("font-size", "18px")
-           .style("color", "Black")
-           .text(function (d) { return d; });
+          .data(["Click legend to","show/hide handedness:"])
+          .enter()
+          .append("text")
+            .attr("x", 700)
+            .attr("y", function (d, i) { return 40 + i * 25; })
+            .style("font-family", "sans-serif")
+            .style("font-size", "18px")
+            .style("color", "Black")
+            .text(function (d) { return d; });
           
-        myChart.legends = [];
+    myChart.legends = [];
 
-      var filterValues = dimple.getUniqueValues(data, "Handedness");
+    var filterValues = dimple.getUniqueValues(data, "Handedness");
         // Get all the rectangles from our now orphaned legend
-          myLegend.shapes.selectAll("rect")
+        myLegend.shapes.selectAll("rect")
           // Add a click event to each rectangle
           .on("click", function (e) {
             // This indicates whether the item is already visible or not
@@ -125,51 +121,59 @@ h1{
    
         });
   
-      d3.csv("baseball_average.csv", function(data){
-         var svg = dimple.newSvg("#chartContainer2", 1200, 300);
-         var myChart4=new dimple.chart(svg,data);
-             myChart4.setBounds(650,30,380,230)
+  d3.csv("baseball_average.csv", function(data){
+    var svg = dimple.newSvg("#chartContainer2", 1200, 300);
+      var myChart4=new dimple.chart(svg,data);
+        myChart4.setBounds(650,30,380,230)
         
-         var x4=myChart4.addCategoryAxis("x",["Handedness","State"]);
-             x4.addGroupOrderRule(["Left", "Both", "Right"]);
-             myChart4.addMeasureAxis("y","HR");
-             myChart4.addSeries(["Handedness","State"],dimple.plot.bar);
-             myChart4.addLegend(950, 30, 100, 200, "Bottom");
-             myChart4.draw();
+        var x4=myChart4.addCategoryAxis("x",["Handedness","State"]);
+            x4.addGroupOrderRule(["Left", "Both", "Right"]);
+            myChart4.addMeasureAxis("y","HR");
+            myChart4.addSeries(["Handedness","State"],dimple.plot.bar);
+            myChart4.addLegend(950, 30, 100, 200, "Bottom");
+            myChart4.draw();
 
-             svg.append("text")
-                .attr("x", 845)
-                .attr("y", 17)
-                .style("text-anchor", "middle")
-                .style("font-family", "sans-serif")
-                .style("font-weight", "bold")
-                .text("Number of Homeruns Vs Handedness and BMI");
+            svg.append("text")
+            .attr("x", 845)
+            .attr("y", 17)
+            .style("text-anchor", "middle")
+            .style("font-family", "sans-serif")
+            .style("font-weight", "bold")
+            .text("Number of Homeruns Vs Handedness and BMI");
 
 
 
 
       var myChart5=new dimple.chart(svg,data);
-          myChart5.setBounds(150,30,380,230)
+        myChart5.setBounds(150,30,380,230)
         
-      var x5=myChart5.addCategoryAxis("x",["Handedness","State"]);
-          x5.addGroupOrderRule(["Left", "Right", "Both"]);
-          myChart5.addMeasureAxis("y","Average");
-          myChart5.addSeries(["Handedness","State"],dimple.plot.bar);
-          myChart5.addLegend(450, 30, 100, 200, "Bottom");
-          myChart5.draw();
+        var x5=myChart5.addCategoryAxis("x",["Handedness","State"]);
+            x5.addGroupOrderRule(["Left", "Right", "Both"]);
+            myChart5.addMeasureAxis("y","Average");
+            myChart5.addSeries(["Handedness","State"],dimple.plot.bar);
+            myChart5.addLegend(450, 30, 100, 200, "Bottom");
+            myChart5.draw();
 
 
 
-          svg.append("text")
-             .attr("x", 340)
-             .attr("y", 17)
-             .style("text-anchor", "middle")
-             .style("font-family", "sans-serif")
-             .style("font-weight", "bold")
-             .text("Batting Average Vs Handedness and BMI");
+            svg.append("text")
+            .attr("x", 340)
+            .attr("y", 17)
+            .style("text-anchor", "middle")
+            .style("font-family", "sans-serif")
+            .style("font-weight", "bold")
+            .text("Batting Average Vs Handedness and BMI");
+
+
   });
      
+   
+  
+
   </script>
+
+
+
 
 </body>
 </html>
