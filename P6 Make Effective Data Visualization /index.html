@@ -7,13 +7,25 @@
   <style type="text/css">
 h1{
   text-align: center;
+  margin-top:10px;
+}
+h3{
+  margin-bottom: -15px;
+}
+p{
+
+  font-family: sans-serif;
+}
+.descriotion{
+  height:300px;
+}
+#chartContainer1{
+  float:center;
 }
 
-div svg g{
-  background-color: black;
+.dimple-custom-legend-label{
+  font-size:200px;
 }
-.g.dimple-legend dimple-reggie-smith dimple-b{
-  background-color: black;
 }
 #chartContainer1{
   text-align: center;
@@ -26,12 +38,16 @@ div svg g{
 
 <body>
 <h1>Baseball Players' Performance</h1>
-<p>A data set containing 1,157 baseball players including their handedness (right or left handed), height (in inches), weight (in pounds), batting average, and home runs. <br>   <a href="https://docs.google.com/document/d/1w7KhqotVi5eoKE3I_AZHbsxdr-NmcWsLTIiZrpxWx4w/pub?embedded=true">Data Available here!</a></p>
+<h3>About data</h3>
+<p>A data set containing 1,157 baseball players including their handedness (right or left handed), height (in inches), weight (in pounds), batting average, and home runs. <br>   <a href="https://docs.google.com/document/d/1w7KhqotVi5eoKE3I_AZHbsxdr-NmcWsLTIiZrpxWx4w/pub?embedded=true">Data Available here!</a>
+<HR></p>
 
 
 <div id="chartContainer1"></div>
-<p>The graph above shows the top 60 baseball player's batting average(hits/at bats) from 1,157 baseball players.<br>
-*Note Body Mass Index(BMI) above 24 is considered Overweight. It seems many of them belong to Overweight.<br><br>Is it a gereral trend to have high BMI for great baseball players? To check it out, I made two additional visualization by BMI.</p>
+<p class="description">The graph above shows the top 60 baseball player's batting average(hits/at bats) from 1,157 baseball players.<br>
+*Note Body Mass Index(BMI) above 24 is considered Overweight. It seems many of them belong to Overweight.</p>
+<HR>
+<p>Is it a gereral trend to have high BMI for great baseball players? To check it out, I made two additional visualization by BMI.</p>
 
 <div id="chartContainer2"></div>
 <p>The two graphs above are the average of players' performance.<br>
@@ -39,14 +55,14 @@ div svg g{
  <script src="http://d3js.org/d3.v3.min.js"></script>
  <script src="http://dimplejs.org/dist/dimple.v2.1.6.min.js"></script>
   <script type="text/javascript">
-  var svg = dimple.newSvg("#chartContainer1", 1200, 300);
+  var svg = dimple.newSvg("#chartContainer1", 1000, 300);
   d3.csv("baseball_final.csv", function(data){
   
   
 
 
     var myChart=new dimple.chart(svg,data);
-        myChart.setBounds(275,30,385,230)
+        myChart.setBounds(350,32,385,230)
         
     var x=myChart.addMeasureAxis("x","BMI");
         x.overrideMax=28;
@@ -56,14 +72,16 @@ div svg g{
         y.overrideMax=0.33;
         myChart.addMeasureAxis("z","HR");
         myChart.addSeries(["Name","Handedness"],dimple.plot.bubble);
-     var myLegend=myChart.addLegend(650, 150, 200, 200, "Right");
+     var myLegend=myChart.addLegend(710, 150, 200, 200, "Right");
+
+
 
       
 
        
         myChart.draw();
    svg.append("text")
-   .attr("x", 470)
+   .attr("x", 545)
    .attr("y", 17)
    .style("text-anchor", "middle")
    .style("font-family", "sans-serif")
@@ -80,10 +98,10 @@ div svg g{
           .data(["Click legend to","show/hide handedness:"])
           .enter()
           .append("text")
-            .attr("x", 700)
-            .attr("y", function (d, i) { return 40 + i * 25; })
+            .attr("x", 740)
+            .attr("y", function (d, i) { return 60 + i * 25; })
             .style("font-family", "sans-serif")
-            .style("font-size", "18px")
+            .style("font-size", "16px")
             .style("color", "Black")
             .text(function (d) { return d; });
           
@@ -108,6 +126,7 @@ div svg g{
             // Hide the shape or show it
             if (hide) {
               d3.select(this).style("opacity", 0.2);
+
             } else {
               newFilters.push(e.aggField.slice(-1)[0]);
               d3.select(this).style("opacity", 0.8);
@@ -122,7 +141,9 @@ div svg g{
           });
 
 
-     
+     d3.selectAll("g")
+       .select("rect")
+       .style("widht","100");
      
    
         });
@@ -130,17 +151,17 @@ div svg g{
   d3.csv("baseball_average.csv", function(data){
     var svg = dimple.newSvg("#chartContainer2", 1200, 300);
       var myChart4=new dimple.chart(svg,data);
-        myChart4.setBounds(650,30,380,230)
+        myChart4.setBounds(580,30,380,230)
         
         var x4=myChart4.addCategoryAxis("x",["Handedness","State"]);
             x4.addGroupOrderRule(["Left", "Both", "Right"]);
             myChart4.addMeasureAxis("y","HR");
             myChart4.addSeries(["Handedness","State"],dimple.plot.bar);
-            myChart4.addLegend(950, 30, 100, 200, "Bottom");
+            myChart4.addLegend(870, 30, 100, 200, "Bottom");
             myChart4.draw();
 
             svg.append("text")
-            .attr("x", 845)
+            .attr("x", 775)
             .attr("y", 17)
             .style("text-anchor", "middle")
             .style("font-family", "sans-serif")
@@ -151,19 +172,19 @@ div svg g{
 
 
       var myChart5=new dimple.chart(svg,data);
-        myChart5.setBounds(150,30,380,230)
+        myChart5.setBounds(70,30,380,230)
         
         var x5=myChart5.addCategoryAxis("x",["Handedness","State"]);
             x5.addGroupOrderRule(["Left", "Right", "Both"]);
             myChart5.addMeasureAxis("y","Average");
             myChart5.addSeries(["Handedness","State"],dimple.plot.bar);
-            myChart5.addLegend(450, 30, 100, 200, "Bottom");
+            myChart5.addLegend(380, 30, 100, 200, "Bottom");
             myChart5.draw();
 
 
 
             svg.append("text")
-            .attr("x", 340)
+            .attr("x", 270)
             .attr("y", 17)
             .style("text-anchor", "middle")
             .style("font-family", "sans-serif")
