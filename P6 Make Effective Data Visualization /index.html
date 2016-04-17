@@ -70,9 +70,13 @@ p{
     var y=myChart.addMeasureAxis("y","Average");
         y.overrideMin=0.27;
         y.overrideMax=0.33;
+        y.tickFormat=".3f";
         myChart.addMeasureAxis("z","HR");
         myChart.addSeries(["Name","Handedness"],dimple.plot.bubble);
      var myLegend=myChart.addLegend(710, 150, 200, 200, "Right");
+         myLegend.fontSize="20px";
+        
+
 
 
 
@@ -150,15 +154,43 @@ p{
   
   d3.csv("baseball_average.csv", function(data){
     var svg = dimple.newSvg("#chartContainer2", 1200, 300);
-      var myChart4=new dimple.chart(svg,data);
-        myChart4.setBounds(580,30,380,230)
+      
+
+
+        var myChart2=new dimple.chart(svg,data);
+        myChart2.setBounds(70,30,380,230)
         
-        var x4=myChart4.addCategoryAxis("x",["Handedness","State"]);
-            x4.addGroupOrderRule(["Left", "Both", "Right"]);
-            myChart4.addMeasureAxis("y","HR");
-            myChart4.addSeries(["Handedness","State"],dimple.plot.bar);
-            myChart4.addLegend(870, 30, 100, 200, "Bottom");
-            myChart4.draw();
+        var x2=myChart2.addCategoryAxis("x",["Handedness","State"]);
+            
+            myChart2.addMeasureAxis("y","Average");
+        var s2=myChart2.addSeries(["Handedness","State"],dimple.plot.bar);
+
+            myChart2.addLegend(380, 30, 100, 200, "Bottom");
+            x2.addOrderRule("Handedness");
+            myChart2.draw();
+
+
+
+            svg.append("text")
+            .attr("x", 270)
+            .attr("y", 17)
+            .style("text-anchor", "middle")
+            .style("font-family", "sans-serif")
+            .style("font-weight", "bold")
+            .text("Batting Average Vs Handedness and BMI");
+
+
+        var myChart3=new dimple.chart(svg,data);
+        myChart3.setBounds(580,30,380,230)
+
+        
+        var x3=myChart3.addCategoryAxis("x",["Handedness","State"]);
+            
+            myChart3.addMeasureAxis("y","HR");
+            var s3=myChart3.addSeries(["Handedness","State"],dimple.plot.bar);
+            myChart3.addLegend(870, 30, 100, 200, "Bottom");
+            x3.addOrderRule("Handedness");
+            myChart3.draw();
 
             svg.append("text")
             .attr("x", 775)
@@ -171,25 +203,7 @@ p{
 
 
 
-      var myChart5=new dimple.chart(svg,data);
-        myChart5.setBounds(70,30,380,230)
-        
-        var x5=myChart5.addCategoryAxis("x",["Handedness","State"]);
-            x5.addGroupOrderRule(["Left", "Right", "Both"]);
-            myChart5.addMeasureAxis("y","Average");
-            myChart5.addSeries(["Handedness","State"],dimple.plot.bar);
-            myChart5.addLegend(380, 30, 100, 200, "Bottom");
-            myChart5.draw();
 
-
-
-            svg.append("text")
-            .attr("x", 270)
-            .attr("y", 17)
-            .style("text-anchor", "middle")
-            .style("font-family", "sans-serif")
-            .style("font-weight", "bold")
-            .text("Batting Average Vs Handedness and BMI");
 
 
   });
