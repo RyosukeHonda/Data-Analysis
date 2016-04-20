@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <meta charset='utf-8'>
+  <title>Baseball_final</title>
+  <style type='text/css'>
+
+h1{
+  text-align: center;
+  margin-top:10px;
+}
+
+h3{
+  margin-bottom: -15px;
+}
+
+p{
+
+  font-family: sans-serif;
+}
+
+.descriotion{
+  height:300px;
+}
+
+#chartContainer1{
+  text-align: center;
+  font-size:20px;
+}
+  </style>
+</head>
+
+<body>
+<h1>Baseball Players' Performance</h1>
+<h3>About data</h3>
+<p>A data set containing 1,157 baseball players including their handedness (right or left handed), height (in inches), weight (in pounds), batting average, and home runs. <br>   <a href='https://docs.google.com/document/d/1w7KhqotVi5eoKE3I_AZHbsxdr-NmcWsLTIiZrpxWx4w/pub?embedded=true'>Data Available here!</a>
+<HR></p>
+
+
+<div id='chartContainer1'></div>
+<p class='description'>The graph above shows the top 60 baseball player's batting average(hits/at bats) from 1,157 baseball players.<br>
+*Note Body Mass Index(BMI) above 24 is considered Overweight. It seems many of them belong to Overweight.</p>
+<HR>
+<p>Is it a general trend to have high BMI for great baseball players? To check it out, I made two additional visualization by BMI.</p>
+
+<div id='chartContainer2'></div>
+<p>The two graphs above are the average of players' performance.<br>
+   From the graphs, Overweight players tend to have better performance.<br>Left handed players are better average and number of homeruns than right handed players.</p>
+
+ // Visualization //
+
+ <script src='http://d3js.org/d3.v3.min.js'></script>
+ <script src='http://dimplejs.org/dist/dimple.v2.1.6.min.js'></script>
+ <script type='text/javascript'>
+
+
+  var svg = dimple.newSvg('#chartContainer1', 1000, 300);
+  d3.csv('baseball_final.csv', function(data){
+
+    // First Graph(buble chart)
+    var myChart=new dimple.chart(svg,data);
+        myChart.setBounds(350,32,385,230) 
+    var x=myChart.addMeasureAxis('x','BMI');
+    // Set the min and max of x-ticks
+        x.overrideMax=28;
+        x.overrideMin=21;
+    var y=myChart.addMeasureAxis('y','Average');
+    // Set the min and max of y-ticks
+        y.overrideMin=0.27;
+        y.overrideMax=0.33;
+        y.tickFormat='.3f';
+        y.fontSize='auto';
+        y.title='AVERAGE';
+        myChart.addMeasureAxis('z','HR');
+        myChart.addSeries(['Name','Handedness'],dimple.plot.bubble);
+    //Set legend
+     var myLegend=myChart.addLegend(710, 150, 200, 200, 'Right');
+         myLegend.fontSize='20px';
+         myChart.draw();
+
+
+
+      //Append title for the bubble chart
+         svg.append('text')
+            .attr('x', 545)
+            .attr('y', 17)
+            .style('text-anchor', 'middle')
+            .style('font-family', 'sans-serif')
+            .style('font-weight', 'bold')
+            .text('Batting Performance of top 60 Players');
+        
+ 
+        
+
+        // This block simply adds the legend title. I put it into a d3 data
+        // object to split it onto 2 lines.  This technique works with any
+        // number of lines, it isn't dimple specific.
+        svg.selectAll('title_text')
+          .data(['Click legend to','show/hide handedness:'])
+          .enter()
+          .append('text')
+            .attr('x', 740)
+            .attr('y', function (d, i) { return 60 + i * 25; })
+            .style('font-family', 'sans-serif')
+            .style('font-size', '16px')
+            .style('color', 'Black')
+            .text(function (d) { return d; });
+          
+    myChart.legends = [];
+
+    var filterValues = dimple.getUniqueValues(data, 'Handedness');
+        // Get all the rectangles from our now orphaned legend
+        myLegend.shapes.selectAll('rect')
+          // Add a click event to each rectangle
+          .on('click', function (e) {
+            // This indicates whether the item is already visible or not
+            var hide = false;
+            var newFilters = [];
+            // If the filters contain the clicked shape hide it
+            filterValues.forEach(function (f) {
+              if (f === e.aggField.slice(-1)[0]) {
+                hide = true;
+              } else {
+                newFilters.push(f);
+              }
+            });
+            // Hide the shape or show it
+            if (hide) {
+              d3.select(this).style('opacity', 0.2);
+
+            } else {
+              newFilters.push(e.aggField.slice(-1)[0]);
+              d3.select(this).style('opacity', 0.8);
+            }
+            // Update the filters
+            filterValues = newFilters;
+            // Filter the data
+            myChart.data = dimple.filterData(data, 'Handedness', filterValues);
+            // Passing a duration parameter makes the chart animate. Without
+            // it there is no transition
+            myChart.draw(400);
+          });
+
+
+     d3.selectAll('g')
+       .select('rect')
+       .style('widht','100');
+
+        });
+  
+
+  //Bar charts
+  d3.csv('baseball_average.csv', function(data){
+    var svg = dimple.newSvg('#chartContainer2', 1200, 300);
+
+        //Bar chart BMI & Handedness vs.AVERAGE
+        var myChart2=new dimple.chart(svg,data);
+        myChart2.setBounds(70,30,380,230);
+        var x2=myChart2.addCategoryAxis('x',['Handedness','State']);
+        var y2=myChart2.addMeasureAxis('y','Average');
+            y2.title='AVERAGE';
+        var s2=myChart2.addSeries(['Handedness','State'],dimple.plot.bar);
+            myChart2.addLegend(380, 30, 100, 200, 'Bottom');
+            x2.addOrderRule('Handedness');
+            myChart2.draw();
+
+
+        //Append title
+            svg.append('text')
+            .attr('x', 270)
+            .attr('y', 17)
+            .style('text-anchor', 'middle')
+            .style('font-family', 'sans-serif')
+            .style('font-weight', 'bold')
+            .text('Batting Average Vs Handedness and BMI');
+
+
+
+        //Bar chart BMI & Handedness vs.HR
+        var myChart3=new dimple.chart(svg,data);
+        myChart3.setBounds(580,30,380,230)
+        var x3=myChart3.addCategoryAxis('x',['Handedness','State']);
+            myChart3.addMeasureAxis('y','HR');
+            var s3=myChart3.addSeries(['Handedness','State'],dimple.plot.bar);
+            myChart3.addLegend(870, 30, 100, 200, 'Bottom');
+            x3.addOrderRule('Handedness');
+            myChart3.draw();
+
+        //Append title
+            svg.append('text')
+            .attr('x', 775)
+            .attr('y', 17)
+            .style('text-anchor', 'middle')
+            .style('font-family', 'sans-serif')
+            .style('font-weight', 'bold')
+            .text('Number of Homeruns Vs Handedness and BMI');
+
+  });
+  </script>
+</body>
+</html>
