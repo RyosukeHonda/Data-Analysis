@@ -13,6 +13,7 @@ High BMI players tend to have better batting performance.
 The second and third graph, I classified batters in terms of BMI(more than 24 or not) and Handedness.
 
 Modification
+
 1.I added some explanation of batting average for the uninitiated.
 
 2.I modified typo and grammatical error. I arranged the layout of HTML.
